@@ -80,8 +80,9 @@ carga_config()
 rangos=carga_rangos("rangos.txt")
 log=""
 hora = datetime.now()
-log="Actual Date: " + str(hora) + " BGPTOOL: " + ID + "<BR>\n"
-texto=log
+log="-------------Start time: " + str(hora) + "-------------<BR>\n BGPTOOL: " + ID + "<BR><BR><BR>\n"
+texto2="""<TABLE BORDER="1"> <TR><TH>RANGE</TH><TH>STATUS</TH><TH>AS PATH</TH><TH>Last AS PATH</TH></TR>"""
+log=log+texto2
 texto2=""
 
 
@@ -94,6 +95,7 @@ tn.write(PASSWORD.encode('ascii') + b"\n")
 tn.read_until(b"att.net>")
 tn.write(b"set cli screen-width 200\n")
 tn.read_until(b"att.net>")
+fallo=0
 
 for rango in rangos:
     COMANDO=COMANDO1+rango+COMANDO2
@@ -108,21 +110,29 @@ for rango in rangos:
     if rango_ok==1:
         aspath=re.findall("\d+", str(line))
         if AS in aspath:
-            print (rango + " Routed: ", aspath)
-            texto2=rango + " Routed: " + str(aspath)
+            #print (rango + " Routed: ", aspath)
+            texto2="<TR><TD>" + rango + " </TD><TD>Routed</TD><TD>" + str(aspath) + "</TD></TR>"
         else:
-            print ("ALERT: " + rango + " Routed, but not in our AS: ", aspath)
+            #print ("ALERT: " + rango + " Routed, but not in our AS: ", aspath)
             texto="ALERT: " + rango + " Routed, but not in our AS: " + str(aspath)
-            texto2="""<p style="color:#FF0000";>ALERT: """  + rango + " Routed, but not in our AS: " + str(aspath) + "</p>"
-            envia_correo(texto, texto2)
-    else:
-        print ("ALERT: " + rango + " NOT Routed")
-        texto="ALERT: " + rango + " NOT Routed"
-        texto2="""<p style="color:#FF0000";>ALERT: """  + rango + " NOT Routed</p>"
-        envia_correo(texto, texto2)
-    log=log+texto2+"<br>\n"
+            texto2="""<TR bgcolor="red"><TD>"""  + rango + "</TD><TD>Routed, but not in our AS</TD><TD>" + str(aspath) + "</TD></TR>"
+            fallo+=1
+            #envia_correo(texto, texto2) mejor lo enviamos al final
 
-if hora.hour==0:
+    else:
+        #print ("ALERT: " + rango + " NOT Routed")
+        texto="ALERT: " + rango + " NOT Routed"
+        texto2="""<TR bgcolor="red"><TD>"""  + rango + "</TD><TD>NOT Routed</TD></TR>"
+        fallo+=1
+        #envia_correo(texto, texto2) mejor lo enviamos al final
+    log=log+texto2
+
+hora_fin = datetime.now()
+texto2="<br><br><br>-------------End time: " + str(hora_fin) + "-------------<BR>\n"
+log=log+"</TABLE>" +texto2
+if (fallo>0):
+    envia_correo("FAIL IN " + str(fallo) + " RANGE(S)",log)
+if ((hora.hour==0)and(hora.minute<5)):  
     envia_correo("Daily report",log)
 print(log)
 
