@@ -80,7 +80,7 @@ carga_config()
 rangos=carga_rangos("rangos.txt")
 log=""
 hora = datetime.now()
-log="-------------Start time: " + str(hora) + "-------------<BR>\n BGPTOOL: " + ID + "<BR><BR><BR>\n"
+log="-------------Start time: " + str(hora) + "-------------<BR>\n BGPTOOL " + ID + " "+ str(len(rangos))+" Ranges <BR><BR><BR>\n"
 texto2="""<TABLE BORDER="1"> <TR><TH>RANGE</TH><TH>STATUS</TH><TH>AS PATH</TH><TH>Last AS PATH</TH></TR>"""
 log=log+texto2
 texto2=""
