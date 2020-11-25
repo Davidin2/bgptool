@@ -33,6 +33,7 @@ def carga_config():
     global MAILS
     global ID
     global AS
+    global PREFIX_DIFF
     config = configparser.ConfigParser()
     try:
         with open ('bgptool.ini') as f:  #Falta gestionar si un id no existe en el fichero
