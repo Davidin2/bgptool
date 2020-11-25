@@ -9,6 +9,7 @@ import re
 AS=""                     #AS que debe estar en el aspath
 ID=""                     #Para diferenciar si tienes varias instancias corriendo
 MAILS=""                  #Direcciones de envío de mail
+PREFIX_DIFF=0            #diferencia de prefijos para mandar mail en valor absoluto
 
 def carga_rangos(fichero):
     try:
@@ -42,7 +43,8 @@ def carga_config():
                 MAILS=config['default']['MAILS'].split(sep=',')
             if 'AS' in config['default']:
                 AS=config['default']['AS']
-
+            if 'PREFIX_DIFF' in config['default']:
+                PREFIX_DIFF=config['default']['PREFIX_DIFF']
 
     except (OSError, IOError) as e:
         print ("No configuration file")
@@ -163,7 +165,7 @@ texto2="<br><br><br>-------------End time: " + str(hora_fin) + "-------------<BR
 log=log +texto2
 if (fallo>0):
     envia_correo("FAIL IN " + str(fallo) + " RANGE(S)",log)
-if ((diferencia_de_rutas>100) or (diferencia_de_rutas<-100)):
+if ((diferencia_de_rutas>int(PREFIX_DIFF)) or (diferencia_de_rutas<-int(PREFIX_DIFF))):
     envia_correo("Sudden change of  " + str(diferencia_de_rutas) + " prefixes from the previous sample",log)
 if ((hora.hour==0)and(hora.minute<5)):  
     envia_correo("Daily report",log)
