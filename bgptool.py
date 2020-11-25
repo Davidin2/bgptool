@@ -76,7 +76,8 @@ PASSWORD = "rviews"
 HOST = "route-server.ip.att.net"
 COMANDO1="show route " 
 COMANDO2= """ exact | match "AS pa" | no-more """
-COMANDO3="""show route aspath-regex ".* 12430 .*"| match \* | no-more """ #AS no de la config aun
+COMANDO3="""show route aspath-regex ".* """ 
+COMANDO4=""" .*"| match \* | no-more """
 carga_config()
 rangos=carga_rangos("rangos.txt")
 log=""
@@ -129,8 +130,8 @@ for rango in rangos:
     log=log+texto2
 
 log=log+"</TABLE>"
-
-tn.write(COMANDO3.encode('ascii')+ b"\n")
+COMANDO5=COMANDO3 + str(AS) + COMANDO4
+tn.write(COMANDO5.encode('ascii')+ b"\n")
 result=tn.read_until(b"att.net>")
 lista_result=result.splitlines()
 
@@ -139,7 +140,7 @@ try:
     with open("num_prefijos.txt", "r") as fichero_prefijos:
         prefijos_antes=fichero_prefijos.read()
 except(OSError, IOError) as e:
-        print ("No hay fichero de prefijos")
+        print ("Yhere is no files with last prexix sample")
 prefijos=[]
 for line in lista_result:
     linea=str(line)
@@ -148,12 +149,12 @@ for line in lista_result:
 prefijos_ahora=len(prefijos)
 diferencia_de_rutas=prefijos_ahora-int(prefijos_antes)
 
-texto="<br><br>Numero de rutas enrutadas por el AS12430: "+ str(prefijos_ahora)
+texto="<br><br>Routed routes in AS" + str(AS)+ " : " + str(prefijos_ahora)
 log=log+texto
-texto="<br><br>Numero de rutas enrutadas por el AS12430 la muestra anterior: "+ str(prefijos_antes)
+texto="<br><br>Last sample Routed routes in AS" + str(AS)+ " : " + str(prefijos_antes)
 log=log+texto
-print("Numero de rutas enrutadas por el AS12430: "+ str(prefijos_ahora))
-print("Numero de rutas enrutadas por el AS12430 la muestra anterior: " + str(prefijos_antes))
+print("Routed routes in AS" + str(AS)+ " : " + str(prefijos_ahora))
+print("Last sample Routed routes in AS" + str(AS)+ " : " + str(prefijos_antes))
 with open("num_prefijos.txt", "w") as fichero_prefijos:
     fichero_prefijos.write(str(prefijos_ahora))
 
@@ -163,7 +164,7 @@ log=log +texto2
 if (fallo>0):
     envia_correo("FAIL IN " + str(fallo) + " RANGE(S)",log)
 if ((diferencia_de_rutas>100) or (diferencia_de_rutas<-100)):
-    envia_correo("Cambio brusco de " + str(diferencia_de_rutas) + " prefijos con respecto a la muestra anterior",log)
+    envia_correo("Sudden change of  " + str(diferencia_de_rutas) + " prefixes from the previous sample",log)
 if ((hora.hour==0)and(hora.minute<5)):  
     envia_correo("Daily report",log)
 
