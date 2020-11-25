@@ -1,0 +1,30 @@
+http://www.cloudtacker.com/Route-servers
+
+
+
+             <a href="telnet://route-server.east.allstream.com/">AllStream East (AS15290)</a><br />
+             <a href="telnet://route-server.west.allstream.com/">AllStream West (AS15290)</a><br />
+             <a href="telnet://route-server.ip.att.net/">ATT Route Server (AS7018)</a><br />
+             <a href="telnet://route-server.belwue.de/">Belwue (AS553)</a><br />
+             <a href="telnet://route-server.cerf.net/">CerfNet Route Server (AS1838)</a><br />
+             <a href="telnet://route-server.as5388.net/">Energis Squared (AS5388)</a><br />
+             <a href="telnet://route-server.as6667.net/">Eunet (AS6667)</a><br />
+             <a href="telnet://route-server.exodus.net/">Exodus Communications USA (AS3967)</a><br />
+             <a href="telnet://route-server.gblx.net/">Global Crossing (AS3549)</a><br />
+             <a href="telnet://route-server.gt.ca/">Group Telecom (AS6539)</a><br />
+             <a href="telnet://route-server.he.net/">Hurricane Electric (AS6939)</a><br />
+             <a href="telnet://public-route-server.is.co.za/">Internet Solutions (AS3741)</a><br />
+             <a href="telnet://route-server.manilaix.net.ph/">Manila Internet Exchange (AS9670)</a><br />
+             <a href="telnet://route-server.ip.ndsoftware.net/">NDSoftware (AS25358)</a><br />
+             <a href="telnet://route-server.opentransit.net/">OpenTransit (AS5511)</a><br />
+             <a href="telnet://route-views.optus.net.au/">Optus Communications (AS7474)</a><br />
+             <a href="telnet://route-views.oregon-ix.net/">Oregon-ix.net Route Server (AS6447)</a><br />
+             <a href="telnet://route-server.savvis.net/">Savvis (AS3561)</a><br />
+             <a href="telnet://route-views.on.bb.telus.com/">Telus East (AS852)</a><br />
+             <a href="telnet://route-views.ab.bb.telus.com/">Telus West (AS852)</a><br />
+             <a href="telnet://route-server.net.tiscali.com/">Tiscali Route Server (AS3257)</a><br />
+             <a href="telnet://route-server.utah.rep.net/">Utah Regional Exchange Point Route Server (AS210)</a><br />
+             <a href="telnet://route-server.wcg.net/">Wiltel Communications Group (AS7911)</a></td>
+             
+             
+             
