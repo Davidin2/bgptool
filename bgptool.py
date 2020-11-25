@@ -76,6 +76,7 @@ PASSWORD = "rviews"
 HOST = "route-server.ip.att.net"
 COMANDO1="show route " 
 COMANDO2= """ exact | match "AS pa" | no-more """
+COMANDO3="""show route aspath-regex ".* 12430 .*"| match \* | no-more """ #AS no de la config aun
 carga_config()
 rangos=carga_rangos("rangos.txt")
 log=""
@@ -127,15 +128,54 @@ for rango in rangos:
         #envia_correo(texto, texto2) mejor lo enviamos al final
     log=log+texto2
 
+log=log+"</TABLE>"
+
+tn.write(COMANDO3.encode('ascii')+ b"\n")
+result=tn.read_until(b"att.net>")
+lista_result=result.splitlines()
+
+prefijos_antes=-1
+try:
+    with open("num_prefijos.txt", "r") as fichero_prefijos:
+        prefijos_antes=fichero_prefijos.read()
+except(OSError, IOError) as e:
+        print ("No hay fichero de prefijos")
+prefijos=[]
+for line in lista_result:
+    linea=str(line)
+    palabras=linea.split(' ')
+    prefijos.append(palabras[0][2:])
+prefijos_ahora=len(prefijos)
+diferencia_de_rutas=prefijos_ahora-int(prefijos_antes)
+
+texto="<br><br>Numero de rutas enrutadas por el AS12430: "+ str(prefijos_ahora)
+log=log+texto
+texto="<br><br>Numero de rutas enrutadas por el AS12430 la muestra anterior: "+ str(prefijos_antes)
+log=log+texto
+print("Numero de rutas enrutadas por el AS12430: "+ str(prefijos_ahora))
+print("Numero de rutas enrutadas por el AS12430 la muestra anterior: " + str(prefijos_antes))
+with open("num_prefijos.txt", "w") as fichero_prefijos:
+    fichero_prefijos.write(str(prefijos_ahora))
+
 hora_fin = datetime.now()
 texto2="<br><br><br>-------------End time: " + str(hora_fin) + "-------------<BR>\n"
-log=log+"</TABLE>" +texto2
+log=log +texto2
 if (fallo>0):
     envia_correo("FAIL IN " + str(fallo) + " RANGE(S)",log)
+if ((diferencia_de_rutas>100) or (diferencia_de_rutas<-100)):
+    envia_correo("Cambio brusco de " + str(diferencia_de_rutas) + " prefijos con respecto a la muestra anterior",log)
 if ((hora.hour==0)and(hora.minute<5)):  
     envia_correo("Daily report",log)
-print(log)
 
+
+
+logfile=open("ultimo.html", "w")
+print (log, file=logfile)
+logfile.close()
+logfile=open("lista_prefijos.txt", "a")
+for prefijo in prefijos:
+    print(str(hora_fin)+" "+ str(prefijo), file=logfile)
+logfile.close()
 tn.write(b"exit\n")
 
 
