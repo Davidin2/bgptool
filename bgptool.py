@@ -70,13 +70,13 @@ Subject: %s
         smtp.sendmail(remitente, MAILS, email)
         #print ("Email sent succesfully")
     except:
-        print ("Error: we canot send the email<BR>")
+        print ("Error: we canot send the email "+str(asunto)+"<br>")
 
 
 
 LOGIN = "rviews"
-PASSWORD = "rviews"
-HOST = "route-server.ip.att.net"
+PASSWORD = "Rviews"
+HOST = "route-server.ip.tdc.net"
 COMANDO1="show route " 
 COMANDO2= """ exact | match "AS pa" | no-more """
 COMANDO3="""show route aspath-regex ".* """ 
@@ -84,7 +84,7 @@ COMANDO4=""" .*"| match \* | no-more """
 carga_config()
 rangos=carga_rangos("rangos.txt")
 log=""
-hora = datetime.now()
+hora = datetime.now().replace(microsecond=0)
 log="-------------Start time: " + str(hora) + "-------------<BR>\n BGPTOOL " + ID + " "+ str(len(rangos))+" Ranges <BR><BR><BR>\n"
 texto2="""<TABLE BORDER="1"> <TR><TH>RANGE</TH><TH>STATUS</TH><TH>AS PATH</TH></TR>"""
 log=log+texto2
@@ -97,15 +97,15 @@ tn.read_until(b"login:")
 tn.write(LOGIN.encode('ascii') + b"\n")
 tn.read_until(b":")
 tn.write(PASSWORD.encode('ascii') + b"\n")
-tn.read_until(b"att.net>")
+tn.read_until(b".net>")
 tn.write(b"set cli screen-width 200\n")
-tn.read_until(b"att.net>")
+tn.read_until(b".net>")
 fallo=0
 
 for rango in rangos:
     COMANDO=COMANDO1+rango+COMANDO2
     tn.write(COMANDO.encode('ascii')+ b"\n")
-    result=tn.read_until(b"att.net>")
+    result=tn.read_until(b".net>")
     lista_result=result.splitlines()
     rango_ok=0
     for line in lista_result:
@@ -135,33 +135,62 @@ for rango in rangos:
 log=log+"</TABLE>"
 COMANDO5=COMANDO3 + str(AS) + COMANDO4
 tn.write(COMANDO5.encode('ascii')+ b"\n")
-result=tn.read_until(b"att.net>")
+result=tn.read_until(b".net>")
 lista_result=result.splitlines()
 
-prefijos_antes=-1
+num_prefijos_antes=-1
+lista_prefijos_antes=[]
 try:
     with open("num_prefijos.txt", "r") as fichero_prefijos:
-        prefijos_antes=fichero_prefijos.read()
+        for linea in fichero_prefijos:
+            lista_prefijos_antes.append(linea[:-1])
+        num_prefijos_antes=lista_prefijos_antes[0]
 except(OSError, IOError) as e:
-        print ("Yhere is no files with last prexix sample")
-prefijos=[]
+        print ("There is no files with last prefix sample")
+
+lista_prefijos_ahora=[]
 for line in lista_result:
     linea=str(line)
     palabras=linea.split(' ')
-    prefijos.append(palabras[0][2:])
-prefijos_ahora=len(prefijos)
-diferencia_de_rutas=prefijos_ahora-int(prefijos_antes)
+    lista_prefijos_ahora.append(palabras[0][2:])
+num_prefijos_ahora=len(lista_prefijos_ahora)
+diferencia_de_rutas=num_prefijos_ahora-int(num_prefijos_antes)
 
-texto="<br><br>Routed routes in AS" + str(AS)+ " : " + str(prefijos_ahora)
+texto="<br><br>Routed routes in AS" + str(AS)+ " : " + str(num_prefijos_ahora)
 log=log+texto
-texto="<br><br>Last sample Routed routes in AS" + str(AS)+ " : " + str(prefijos_antes)
+texto="<br><br>Last sample Routed routes in AS" + str(AS)+ " : " + str(num_prefijos_antes)
 log=log+texto
-print("Routed routes in AS" + str(AS)+ " : " + str(prefijos_ahora))
-print("Last sample Routed routes in AS" + str(AS)+ " : " + str(prefijos_antes))
+print("Routed routes in AS" + str(AS)+ " : " + str(num_prefijos_ahora))
+print("Last sample Routed routes in AS" + str(AS)+ " : " + str(num_prefijos_antes))
 with open("num_prefijos.txt", "w") as fichero_prefijos:
-    fichero_prefijos.write(str(prefijos_ahora))
+    fichero_prefijos.write(str(num_prefijos_ahora)+"\n")
+    for prefijo in lista_prefijos_ahora:
+        fichero_prefijos.write(str(prefijo)+"\n")
 
-hora_fin = datetime.now()
+no_esta_ahora=[]
+no_estaba_antes=[]
+
+for prefijo_antes in lista_prefijos_antes:
+    if "/" in str(prefijo_antes):
+        if prefijo_antes not in lista_prefijos_ahora:
+            no_esta_ahora.append(prefijo_antes)
+for prefijo_ahora in lista_prefijos_ahora:
+    if "/" in str(prefijo_ahora):
+        if prefijo_ahora not in lista_prefijos_antes:
+            no_estaba_antes.append(prefijo_ahora)
+print("These prefixes were before and now they are not:")
+print(no_esta_ahora)
+print("These prefixes are now and they were not before:")
+print(no_estaba_antes)
+
+texto="<br><br>These prefixes were before and now they are not: " + str(no_esta_ahora)
+log=log+texto
+texto="<br><br>These prefixes are now and they were not before: " + str(no_estaba_antes)
+log=log+texto
+
+
+
+hora_fin = datetime.now().replace(microsecond=0)
 texto2="<br><br><br>-------------End time: " + str(hora_fin) + "-------------<BR>\n"
 log=log +texto2
 if (fallo>0):
@@ -177,12 +206,23 @@ logfile=open("ultimo.html", "w")
 print (log, file=logfile)
 logfile.close()
 logfile=open("lista_prefijos.txt", "a")
-for prefijo in prefijos:
+for prefijo in lista_prefijos_ahora:
     print(str(hora_fin)+" "+ str(prefijo), file=logfile)
 logfile.close()
+
+logfile=open("lista_cambios.txt", "a")
+for prefijo in no_esta_ahora:
+    print(str(hora_fin)+" - "+ str(prefijo), file=logfile)
+for prefijo in no_estaba_antes:
+    print(str(hora_fin)+" + "+ str(prefijo), file=logfile)
+
+logfile.close()
+
 tn.write(b"exit\n")
 
 
+#Posibles mejoras:
+#Intentar que la fecha salga sin los miliseg
 
 
 
