@@ -64,7 +64,7 @@ Content-type: text/html
 Subject: %s
     
 %s
-""" % (remitente, destinatario, asunto, mensaje)
+""" % (remitente, ",".join(destinatario), asunto, mensaje)
     try:
         smtp = smtplib.SMTP('localhost')
         smtp.sendmail(remitente, MAILS, email)
@@ -222,7 +222,7 @@ tn.write(b"exit\n")
 
 
 #Posibles mejoras:
-#Intentar que la fecha salga sin los miliseg
+#¿Añadir los as a la lista de prefijos?
 
 
 
