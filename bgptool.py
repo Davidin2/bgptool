@@ -92,20 +92,25 @@ texto2=""
 
 
 
-tn = telnetlib.Telnet(HOST,23)
-tn.read_until(b"login:")
+try:
+    tn = telnetlib.Telnet(HOST,23,5)
+except:
+    ca=str(datetime.now().replace(microsecond=0))
+    print (ca+" Fallo de conexion en el telnet")
+
+tn.read_until(b"login:",60)
 tn.write(LOGIN.encode('ascii') + b"\n")
-tn.read_until(b":")
+tn.read_until(b":",60)
 tn.write(PASSWORD.encode('ascii') + b"\n")
-tn.read_until(b".net>")
+tn.read_until(b".net>",60)
 tn.write(b"set cli screen-width 200\n")
-tn.read_until(b".net>")
+tn.read_until(b".net>",60)
 fallo=0
 
 for rango in rangos:
     COMANDO=COMANDO1+rango+COMANDO2
     tn.write(COMANDO.encode('ascii')+ b"\n")
-    result=tn.read_until(b".net>")
+    result=tn.read_until(b".net>",60)
     lista_result=result.splitlines()
     rango_ok=0
     for line in lista_result:
@@ -135,7 +140,7 @@ for rango in rangos:
 log=log+"</TABLE>"
 COMANDO5=COMANDO3 + str(AS) + COMANDO4
 tn.write(COMANDO5.encode('ascii')+ b"\n")
-result=tn.read_until(b".net>")
+result=tn.read_until(b".net>",60)
 lista_result=result.splitlines()
 
 num_prefijos_antes=-1
