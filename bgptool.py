@@ -5,6 +5,7 @@ from datetime import date
 import smtplib
 import configparser
 import re
+import sys
 
 AS=""                     #AS que debe estar en el aspath
 ID=""                     #Para diferenciar si tienes varias instancias corriendo
@@ -98,19 +99,41 @@ except:
     ca=str(datetime.now().replace(microsecond=0))
     print (ca+" Fallo de conexion en el telnet")
 
-tn.read_until(b"login:",60)
+result=tn.read_until(b"login:",6)
+if ("login" not in str(result)):
+    ca=str(datetime.now().replace(microsecond=0))
+    print (ca+" Fallo esperando login")
+    sys.exit(1)
+
 tn.write(LOGIN.encode('ascii') + b"\n")
-tn.read_until(b":",60)
+result=tn.read_until(b":",60)
+if (":" not in str(result)):
+    ca=str(datetime.now().replace(microsecond=0))
+    print (ca+" Fallo esperando password")
+    sys.exit(1)
 tn.write(PASSWORD.encode('ascii') + b"\n")
-tn.read_until(b".net>",60)
+result=tn.read_until(b".net>",60)
+if ("net>" not in str(result)):
+    ca=str(datetime.now().replace(microsecond=0))
+    print (ca+" Fallo esperando prompt1")
+    sys.exit(1)
+
 tn.write(b"set cli screen-width 200\n")
-tn.read_until(b".net>",60)
+result=tn.read_until(b".net>",60)
+if ("net>" not in str(result)):
+    ca=str(datetime.now().replace(microsecond=0))
+    print (ca+" Fallo esperando prompt2")
+    sys.exit(1)
 fallo=0
 
 for rango in rangos:
     COMANDO=COMANDO1+rango+COMANDO2
     tn.write(COMANDO.encode('ascii')+ b"\n")
     result=tn.read_until(b".net>",60)
+    if ("net>" not in str(result)):
+        ca=str(datetime.now().replace(microsecond=0))
+        print (ca+" Fallo esperando comando+2")
+        sys.exit(1)
     lista_result=result.splitlines()
     rango_ok=0
     for line in lista_result:
@@ -141,6 +164,10 @@ log=log+"</TABLE>"
 COMANDO5=COMANDO3 + str(AS) + COMANDO4
 tn.write(COMANDO5.encode('ascii')+ b"\n")
 result=tn.read_until(b".net>",60)
+if ("net>" not in str(result)):
+    ca=str(datetime.now().replace(microsecond=0))
+    print (ca+" Fallo esperando comando5")
+    sys.exit(1)
 lista_result=result.splitlines()
 
 num_prefijos_antes=-1
