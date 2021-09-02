@@ -6,6 +6,7 @@ import smtplib
 import configparser
 import re
 import sys
+import json
 
 AS=""                     #AS que debe estar en el aspath
 ID=""                     #Para diferenciar si tienes varias instancias corriendo
@@ -126,6 +127,10 @@ if ("net>" not in str(result)):
     sys.exit(1)
 fallo=0
 
+data = {}
+data["BGPTOOL: " + ID] = []
+
+
 for rango in rangos:
     COMANDO=COMANDO1+rango+COMANDO2
     tn.write(COMANDO.encode('ascii')+ b"\n")
@@ -144,10 +149,18 @@ for rango in rangos:
         aspath=re.findall("\d+", str(line))
         if AS in aspath:
             #print (rango + " Routed: ", aspath)
+            data["BGPTOOL: " + ID].append({
+                'range': rango,
+                'Status': 'Routed',
+                'aspath': str(aspath)})
             texto2="<TR><TD>" + rango + " </TD><TD>Routed</TD><TD>" + str(aspath) + "</TD></TR>"
         else:
             #print ("ALERT: " + rango + " Routed, but not in our AS: ", aspath)
             texto="ALERT: " + rango + " Routed, but not in our AS: " + str(aspath)
+            data["BGPTOOL: " + ID].append({
+                'range': rango,
+                'Status': 'Routed, but not in our AS',
+                'aspath': str(aspath)})
             texto2="""<TR bgcolor="red"><TD>"""  + rango + "</TD><TD>Routed, but not in our AS</TD><TD>" + str(aspath) + "</TD></TR>"
             fallo+=1
             #envia_correo(texto, texto2) mejor lo enviamos al final
@@ -155,10 +168,17 @@ for rango in rangos:
     else:
         #print ("ALERT: " + rango + " NOT Routed")
         texto="ALERT: " + rango + " NOT Routed"
+        data["BGPTOOL: " + ID].append({
+                'range': rango,
+                'Status': 'NOT Routed',
+                'aspath': ""})
         texto2="""<TR bgcolor="red"><TD>"""  + rango + "</TD><TD>NOT Routed</TD></TR>"
         fallo+=1
         #envia_correo(texto, texto2) mejor lo enviamos al final
     log=log+texto2
+
+with open('ultimo.json', 'w') as file:
+    json.dump(data, file, indent=4)
 
 log=log+"</TABLE>"
 COMANDO5=COMANDO3 + str(AS) + COMANDO4
